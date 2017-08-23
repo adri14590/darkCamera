@@ -1,0 +1,57 @@
+apply plugin: 'com.android.library'
+
+ext {
+    bintrayRepo = 'alpha-movie'
+    bintrayName = 'alpha-movie'
+
+    publishedGroupId = 'com.alphamovie.library'
+    libraryName = 'Alpha Movie'
+    artifact = 'alpha-movie'
+
+    libraryDescription = 'Android video player with alpha channel support'
+
+    siteUrl = 'https://github.com/pavelsemak/alpha-movie'
+    gitUrl = 'https://github.com/pavelsemak/alpha-movie.git'
+
+    libraryVersion = '1.2.1'
+
+    developerId = 'pavelsemak'
+    developerName = 'Pavel Semak'
+    developerEmail = 'pavel.semak.a@gmail.com'
+
+    licenseName = 'The Apache Software License, Version 2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    allLicenses = ["Apache-2.0"]
+}
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.2"
+
+    defaultConfig {
+        minSdkVersion 14
+        targetSdkVersion 25
+        versionCode 5
+        versionName "1.2.1"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.android.support:appcompat-v7:25.1.1'
+}
+
+tasks.withType(Javadoc) {
+    options.addStringOption('Xdoclint:none', '-quiet')
+    options.addStringOption('encoding', 'UTF-8')
+    options.addStringOption('charSet', 'UTF-8')
+}
+
+apply from: 'https://raw.githubusercontent.com/pavelsemak/JCenter/master/install.gradle'
+apply from: 'https://raw.githubusercontent.com/pavelsemak/JCenter/master/bintray.gradle'
