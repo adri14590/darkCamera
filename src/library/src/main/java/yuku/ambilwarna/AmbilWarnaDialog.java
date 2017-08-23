@@ -6,13 +6,17 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 public class AmbilWarnaDialog {
 	public interface OnAmbilWarnaListener {
@@ -34,6 +38,7 @@ public class AmbilWarnaDialog {
 	final ImageView viewTarget;
 	final ImageView viewAlphaCheckered;
 	final ViewGroup viewContainer;
+	final EditText viewColorCode;
 	final float[] currentColorHsv = new float[3];
 	int alpha;
 
@@ -78,6 +83,7 @@ public class AmbilWarnaDialog {
 		viewAlphaOverlay = view.findViewById(R.id.ambilwarna_overlay);
 		viewAlphaCursor = (ImageView) view.findViewById(R.id.ambilwarna_alphaCursor);
 		viewAlphaCheckered = (ImageView) view.findViewById(R.id.ambilwarna_alphaCheckered);
+		viewColorCode = (EditText) view.findViewById(R.id.color_code);
 
 		{ // hide/show alpha
 			viewAlphaOverlay.setVisibility(supportsAlpha? View.VISIBLE: View.GONE);
@@ -88,6 +94,8 @@ public class AmbilWarnaDialog {
 		viewSatVal.setHue(getHue());
 		viewOldColor.setBackgroundColor(color);
 		viewNewColor.setBackgroundColor(color);
+		String hexColor = String.format("#%06X", (0xFFFFFF & color));
+		viewColorCode.setText(hexColor);
 
 		viewHue.setOnTouchListener(new View.OnTouchListener() {
 			@Override
@@ -165,6 +173,9 @@ public class AmbilWarnaDialog {
 					moveTarget();
 					viewNewColor.setBackgroundColor(getColor());
 
+					String hexColor = String.format("#%06X", (0xFFFFFF & getColor()));
+					viewColorCode.setText(hexColor);
+
 					return true;
 				}
 				return false;
@@ -212,6 +223,36 @@ public class AmbilWarnaDialog {
 				moveTarget();
 				if (AmbilWarnaDialog.this.supportsAlpha) updateAlphaView();
 				view.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+			}
+		});
+
+		viewColorCode.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+			@Override
+			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+				if (actionId == EditorInfo.IME_ACTION_DONE) {
+					int color = getColor();
+					try {
+						String color_s = v.getText().toString();
+						color = Color.parseColor(color_s);
+
+
+					}
+					catch (Exception e) {}
+
+					float hsv[] = new float[3];
+					Color.colorToHSV(color, hsv);
+					setHue(hsv[0]);
+					setSat(hsv[1]);
+					setVal(hsv[2]);
+
+					// update view
+					viewSatVal.setHue(hsv[0]);
+					moveCursor();
+					viewNewColor.setBackgroundColor(color);
+					updateAlphaView();
+					return false;
+				}
+				return false;
 			}
 		});
 	}

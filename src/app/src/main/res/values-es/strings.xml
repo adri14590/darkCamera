@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TestCamera</string>
+    <string name="pref_header_network">Red</string>
+    <string name="pref_header_video">Video</string>
+    <string name="rtsp_camera_address_preference">Dirección RTSP de la cámara</string>
+    <string name="server_port_preference">Puerto del servidor</string>
+    <string name="title_activity_main">TestCamera</string>
+    <string name="title_activity_settings">Opciones</string>
+    <string name="action_settings">Opciones</string>
+    <string name="alphaVideo_accuracy_preference">Nivel de precisión de AlphaVideo</string>
+    <string name="alphaVideo_alphaColor_preference">Color alpha de AlphaVideo</string>
+    <string name="pref_header_general">General</string>
+    <string name="show_actionBar_preference">Mostrar ActionBar</string>
+</resources>

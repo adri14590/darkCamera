@@ -7,4 +7,14 @@
         android:icon="@drawable/ic_info_black_24dp"
         android:title="@string/pref_header_general" />
 
+    <header
+        android:fragment="com.cameratest.aag.testcamera.activities.SettingsActivity$NetworkPreferenceFragment"
+        android:icon="@drawable/ic_http_black_24dp"
+        android:title="@string/pref_header_network" />
+
+    <header
+        android:fragment="com.cameratest.aag.testcamera.activities.SettingsActivity$VideoPreferenceFragment"
+        android:icon="@drawable/ic_open_with_black_24dp"
+        android:title="@string/pref_header_video" />
+
 </preference-headers>

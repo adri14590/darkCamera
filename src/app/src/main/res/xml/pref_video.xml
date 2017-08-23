@@ -1,0 +1,17 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <EditTextPreference
+        android:defaultValue="0.92"
+        android:inputType="numberDecimal"
+        android:key="alphaVideo_accuracy"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/alphaVideo_accuracy_preference" />
+
+    <yuku.ambilwarna.widget.AmbilWarnaPreference
+        android:key="alphaVideo_alphaColor"
+        android:defaultValue="0xff1e852a"
+        android:title="@string/alphaVideo_alphaColor_preference" />
+
+</PreferenceScreen>

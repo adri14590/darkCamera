@@ -52,6 +52,3 @@ tasks.withType(Javadoc) {
     options.addStringOption('encoding', 'UTF-8')
     options.addStringOption('charSet', 'UTF-8')
 }
-
-apply from: 'https://raw.githubusercontent.com/pavelsemak/JCenter/master/install.gradle'
-apply from: 'https://raw.githubusercontent.com/pavelsemak/JCenter/master/bintray.gradle'

@@ -1,47 +1,8 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-
-    <!--<SwitchPreference-->
-        <!--android:defaultValue="true"-->
-        <!--android:key="example_switch"-->
-        <!--android:summary="@string/pref_description_social_recommendations"-->
-        <!--android:title="@string/pref_title_social_recommendations" />-->
-
-    <!-- NOTE: EditTextPreference accepts EditText attributes. -->
-    <!-- NOTE: EditTextPreference's summary should be set to its value by the activity code. -->
-    <EditTextPreference
-        android:defaultValue="5000"
-        android:inputType="number"
-        android:key="server_port"
-        android:maxLines="1"
-        android:selectAllOnFocus="true"
-        android:singleLine="true"
-        android:title="@string/server_port_preference" />
-
-    <EditTextPreference
-        android:defaultValue="0.92"
-        android:inputType="numberDecimal"
-        android:key="alphaVideo_accuracy"
-        android:maxLines="1"
-        android:selectAllOnFocus="true"
-        android:singleLine="true"
-        android:title="@string/alphaVideo_accuracy_preference" />
-
-    <yuku.ambilwarna.widget.AmbilWarnaPreference
-        android:key="alphaVideo_alphaColor"
-        android:defaultValue="0xff1e852a"
-        android:title="@string/alphaVideo_alphaColor_preference" />
-
-    <!--&lt;!&ndash; NOTE: Hide buttons to simplify the UI. Users can touch outside the dialog to-->
-         <!--dismiss it. &ndash;&gt;-->
-    <!--&lt;!&ndash; NOTE: ListPreference's summary should be set to its value by the activity code. &ndash;&gt;-->
-    <!--<ListPreference-->
-        <!--android:defaultValue="-1"-->
-        <!--android:entries="@array/pref_example_list_titles"-->
-        <!--android:entryValues="@array/pref_example_list_values"-->
-        <!--android:key="example_list"-->
-        <!--android:negativeButtonText="@null"-->
-        <!--android:positiveButtonText="@null"-->
-        <!--android:title="@string/pref_title_add_friends_to_messages" />-->
+    <SwitchPreference
+        android:defaultValue="true"
+        android:key="show_actionBar"
+        android:title="@string/show_actionBar_preference" />
 
 </PreferenceScreen>

@@ -461,7 +461,7 @@ public class AlphaMovieView extends GLTextureView {
         void onVideoEnded();
     }
 
-    private enum PlayerState {
+    public enum PlayerState {
         NOT_PREPARED, PREPARED, STARTED, PAUSED, STOPPED, RELEASE
     }
 }

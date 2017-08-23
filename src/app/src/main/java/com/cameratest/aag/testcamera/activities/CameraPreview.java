@@ -1,9 +1,7 @@
 package com.cameratest.aag.testcamera.activities;
 
-import android.app.Activity;
 import android.content.Context;
 import android.hardware.Camera;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;

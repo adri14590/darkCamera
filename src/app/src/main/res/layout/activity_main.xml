@@ -4,12 +4,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.cameratest.aag.testcamera.activities.MainActivity">
+    tools:context="com.cameratest.aag.testcamera.activities.MainActivity"
+    android:keepScreenOn="true">
 
     <android.support.design.widget.AppBarLayout
+        android:id="@+id/actionBar"
         android:layout_width="match_parent"
-        android:layout_height="45dp"
-        android:theme="@style/AppTheme.AppBarOverlay">
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay"
+        android:visibility="invisible">
 
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
@@ -21,7 +24,6 @@
     </android.support.design.widget.AppBarLayout>
 
     <LinearLayout
-        android:layout_marginTop="45dp"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent">
 
@@ -47,13 +49,13 @@
             <!--video4.mp4-->
             <!--custom:accuracy="0.7"
             custom:alphaColor="#1dbd01"-->
-            <!--<com.alphamovie.lib.AlphaMovieView
+            <com.alphamovie.lib.AlphaMovieView
                 android:id="@+id/videoView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:visibility="invisible"
-                custom:accuracy="0.92"
-                custom:alphaColor="#1e852a"
+                app:accuracy="0.92"
+                app:alphaColor="#1e852a"
                 android:layout_alignParentTop="true"
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentRight="true"
@@ -61,7 +63,7 @@
                 android:layout_marginTop="0dp"
                 android:layout_marginBottom="-5dp"
                 android:layout_marginLeft="-5dp"
-                android:layout_marginRight="0dp"/>-->
+                android:layout_marginRight="0dp"/>
         </RelativeLayout>
         <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="wrap_content"

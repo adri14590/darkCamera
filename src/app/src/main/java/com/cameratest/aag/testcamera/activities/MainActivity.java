@@ -1,29 +1,27 @@
 package com.cameratest.aag.testcamera.activities;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
-import android.graphics.Color;
 import android.hardware.Camera;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-
 import android.os.Bundle;
-
+import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
@@ -34,8 +32,6 @@ import com.cameratest.aag.testcamera.R;
 import com.cameratest.aag.testcamera.utils.Constants;
 import com.cameratest.aag.testcamera.utils.MediaUtils;
 import com.cameratest.aag.testcamera.utils.PreferencesManager;
-import com.koushikdutta.async.http.WebSocket;
-import com.koushikdutta.async.http.body.AsyncHttpRequestBody;
 import com.koushikdutta.async.http.body.UrlEncodedFormBody;
 import com.koushikdutta.async.http.server.AsyncHttpServer;
 import com.koushikdutta.async.http.server.AsyncHttpServerRequest;
@@ -46,14 +42,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-
-import io.vov.vitamio.MediaPlayer;
-import io.vov.vitamio.widget.VideoView;
-
-import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE;
 
 public class MainActivity extends AppCompatActivity {
     private static int PLAY_PERIOD_SECONDS = 30;
@@ -61,7 +50,6 @@ public class MainActivity extends AppCompatActivity {
     private Camera mCamera;
     private CameraPreview mPreview;
     private AlphaMovieView mVideoView;
-    private boolean mVideoPlaying;
 
     //private long mLastPlayed;
     boolean mIsLandscape;
@@ -75,6 +63,8 @@ public class MainActivity extends AppCompatActivity {
     boolean m_acceptExternalStorage = false;
 
     private SensorManager mSensorManager;
+    private BroadcastReceiver receiver;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,38 +73,10 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        /*** Layout Setting ***/
-        int alphaColor = PreferencesManager.getAlphaVideoAlphaColor(getApplicationContext());
-        float accuracy = PreferencesManager.getAlphaVideoAccuracy(getApplicationContext());
-        mVideoView = new AlphaMovieView(this, alphaColor, accuracy);
-        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
-                RelativeLayout.LayoutParams.MATCH_PARENT,
-                RelativeLayout.LayoutParams.MATCH_PARENT);
-        lp.setMargins(0, 0, 0, 0);
-        mVideoView.setVisibility(View.INVISIBLE);
-
-        lp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-        lp.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-        lp.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-        lp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-
-        mVideoView.setLayoutParams(lp);
-        RelativeLayout rL = (RelativeLayout) findViewById(R.id.relativeLayout);
-        rL.addView(mVideoView);
-
-        /*** Set RTSP ***/
-        if (!io.vov.vitamio.LibsChecker.checkVitamioLibs(this))
-            return;
-
-        /*** Server HTTP ***/
-        int serverPort = PreferencesManager.getServerPort(getApplicationContext());
-        setAndStartServer(serverPort);
-
-        /*** Start Sensor Manager ***/
-        mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
-        mSensorManager.registerListener(mSensorListener, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_FASTEST);
-
-        //mLastPlayed = System.currentTimeMillis();
+        /*** Show or Hide ActionBar ***/
+        boolean showActionBar = PreferencesManager.getShowActionBar(getApplicationContext());
+        AppBarLayout appBarLayout = (AppBarLayout) findViewById(R.id.actionBar);
+        appBarLayout.setVisibility(showActionBar ? View.VISIBLE : View.INVISIBLE);
 
         /*** Check permissions ***/
         m_acceptCamera = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
@@ -149,35 +111,58 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkInitApp() {
-        if(m_acceptCamera && m_acceptSound && m_acceptExternalStorage) {
-            // Create an instance of Camera
-            mCamera = getCameraInstance();
+        try {
+            if (m_acceptCamera && m_acceptSound && m_acceptExternalStorage) {
 
-            // Create our Preview view and set it as the content of our activity.
-            mPreview = new CameraPreview(this, mCamera);
-            FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
-            preview.addView(mPreview);
+                /*** Layout Setting ***/
+                int alphaColor = PreferencesManager.getAlphaVideoAlphaColor(getApplicationContext());
+                float accuracy = PreferencesManager.getAlphaVideoAccuracy(getApplicationContext());
 
-            // Add a listener to the Capture button
-            Button captureButton = (Button) findViewById(R.id.button_capture);
-            captureButton.setOnClickListener(
-                    new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            // get an image from the camera
-                            mCamera.takePicture(null, null, mPicture);
+                mVideoView = new AlphaMovieView(this, alphaColor, accuracy);
+                RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
+                        RelativeLayout.LayoutParams.MATCH_PARENT,
+                        RelativeLayout.LayoutParams.MATCH_PARENT);
+                lp.setMargins(0, 0, 0, 0);
+
+                lp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+                lp.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+                lp.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+                lp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+
+                mVideoView.setLayoutParams(lp);
+                RelativeLayout rL = (RelativeLayout) findViewById(R.id.relativeLayout);
+                rL.addView(mVideoView);
+
+                //mVideoView = (AlphaMovieView) findViewById(R.id.videoView);
+
+                // Create an instance of Camera
+                mCamera = getCameraInstance();
+
+                // Create our Preview view and set it as the content of our activity.
+                mPreview = new CameraPreview(this, mCamera);
+                FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
+                preview.addView(mPreview);
+
+                // Add a listener to the Capture button
+                Button captureButton = (Button) findViewById(R.id.button_capture);
+                captureButton.setOnClickListener(
+                        new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                // get an image from the camera
+                                mCamera.takePicture(null, null, mPicture);
+                            }
                         }
-                    }
-            );
+                );
 
-            //VideoView rtspVideo = (VideoView) findViewById(R.id.camera_preview);
+                //VideoView rtspVideo = (VideoView) findViewById(R.id.camera_preview);
 
             /*
              * Alternatively,for streaming media you can use
              * mVideoView.setVideoURI(Uri.parse(URLstring));
              */
-            //rtspVideo.setVideoPath("rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov");
-            //rtspVideo.requestFocus();
+                //rtspVideo.setVideoPath(PreferencesManager.getRTSPCameraAddress(getApplicationContext()));
+                //rtspVideo.requestFocus();
 //            rtspVideo.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
 //                @Override
 //                public void onPrepared(MediaPlayer mediaPlayer) {
@@ -186,53 +171,59 @@ public class MainActivity extends AppCompatActivity {
 //                }
 //            });
 
-            // Add a listener to the Capture button
-            Button captureVideoButton = (Button) findViewById(R.id.button_capture_video);
-            captureVideoButton.setOnClickListener(
+                // Add a listener to the Capture button
+                Button captureVideoButton = (Button) findViewById(R.id.button_capture_video);
+                captureVideoButton.setOnClickListener(
                     new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            if(!mVideoPlaying) {
-                                mVideoPlaying = true;
-                                mVideoView.setVisibility(View.VISIBLE);
-                                mVideoView.setVideoFromAssets("video3.mp4");
-                                mVideoView.setLooping(false);
-                            }
+                            reproduceVideo("video3.mp4", true);
                         }
                     }
-            );
+                );
 
-            //mVideoView = (AlphaMovieView) findViewById(R.id.videoView);
+                mVideoView.setAlpha(0F);
+                mVideoView.setOnVideoStartedListener(new AlphaMovieView.OnVideoStartedListener() {
 
-            mVideoView.setAlpha(0.5F);
-            mVideoPlaying = false;
+                    @Override
+                    public void onVideoStarted() {
+                        mVideoView.setAlpha(0.5F);
+                    }
+                });
 
-            mVideoView.setOnVideoStartedListener(new AlphaMovieView.OnVideoStartedListener() {
-                @Override
-                public void onVideoStarted() {
-                    mVideoPlaying = true;
-                }
-            });
+                mVideoView.setOnVideoEndedListener(new AlphaMovieView.OnVideoEndedListener() {
+                    @Override
+                    public void onVideoEnded() {
+                        mVideoView.setAlpha(0F);
+                    }
+                });
 
-            mVideoView.setOnVideoEndedListener(new AlphaMovieView.OnVideoEndedListener() {
-                @Override
-                public void onVideoEnded() {
-                    mVideoView.setVisibility(View.INVISIBLE);
-                    mVideoPlaying = false;
-                }
-            });
+                /*** Set RTSP ***/
+                if (!io.vov.vitamio.LibsChecker.checkVitamioLibs(this))
+                    return;
+
+                /*** Server HTTP ***/
+                int serverPort = PreferencesManager.getServerPort(getApplicationContext());
+                setAndStartServer(serverPort);
+
+                /*** Start Sensor Manager ***/
+                mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
+                mSensorManager.registerListener(mSensorListener, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_FASTEST);
+
+                //mLastPlayed = System.currentTimeMillis();
+
+            } else if (!m_acceptCamera) {
+                requestPermissions(Manifest.permission.CAMERA, MY_PERMISSIONS_REQUEST_CAMERA);
+            } else if (!m_acceptSound) {
+                requestPermissions(Manifest.permission.RECORD_AUDIO, MY_PERMISSIONS_REQUEST_SOUND);
+            } else if (!m_acceptExternalStorage) {
+                requestPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, MY_PERMISSIONS_REQUEST_EXTERNALSTORAGE);
+            } else {
+                Toast.makeText(this, "La aplicación no funcionará sin estos permisos", Toast.LENGTH_SHORT).show();
+            }
         }
-        else if(!m_acceptCamera){
-            requestPermissions(Manifest.permission.CAMERA, MY_PERMISSIONS_REQUEST_CAMERA);
-        }
-        else if(!m_acceptSound) {
-            requestPermissions(Manifest.permission.RECORD_AUDIO, MY_PERMISSIONS_REQUEST_SOUND);
-        }
-        else if(!m_acceptExternalStorage) {
-            requestPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, MY_PERMISSIONS_REQUEST_EXTERNALSTORAGE);
-        }
-        else {
-            Toast.makeText(this, "La aplicación no funcionará sin estos permisos", Toast.LENGTH_SHORT).show();
+        catch (Exception e) {
+            Log.d(Constants.TAG, "Ocurrió un error durante la inicialización: " + e.getMessage());
         }
     }
 
@@ -307,49 +298,54 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private void setAndStartServer(int port) {
-        AsyncHttpServer server = new AsyncHttpServer();
+    private HttpServerRequestCallback mServerRequestCallback = new HttpServerRequestCallback() {
 
-        List<WebSocket> _sockets = new ArrayList<WebSocket>();
+        @Override
+        public void onRequest(final AsyncHttpServerRequest request, final AsyncHttpServerResponse response) {
+            final UrlEncodedFormBody requestBody = (UrlEncodedFormBody) request.getBody();
+            final String videoName = requestBody.get().getString("video");
+            boolean videoExists = false;
+            try {
+                videoExists = Arrays.asList(getResources().getAssets().list("")).contains(videoName);
+            } catch (IOException e) {}
 
-        server.post("/video", new HttpServerRequestCallback() {
-            @Override
-            public void onRequest(AsyncHttpServerRequest request, AsyncHttpServerResponse response) {
-
-                if(!mVideoPlaying && mIsLandscape) {
-                    final UrlEncodedFormBody requestBody = (UrlEncodedFormBody) request.getBody();
-                    final String videoName = requestBody.get().getString("video");
-                    boolean videoExists = false;
-                    try {
-                        videoExists = Arrays.asList(getResources().getAssets().list("")).contains(videoName);
-                    } catch (IOException e) {}
-
-                    if(videoExists) {
-                        mVideoPlaying = true;
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                mVideoView.setVisibility(View.VISIBLE);
-                                mVideoView.setVideoFromAssets(videoName);
-                                mVideoView.setLooping(false);
-                            }
-                        });
-
-                        response.code(200);
-                        response.send("Played");
-                    }
-                    else {
-                        response.code(404);
-                        response.send("Video Not Exists");
-                    }
-                }
-                response.code(400);
-                response.send("Not Played");
+            if (videoExists) {
+                response.code(200);
+                response.send("Received");
+                Intent broadcast = new Intent();
+                broadcast.setAction(getApplicationContext().getPackageName() + ".messageReceived");
+                broadcast.putExtra("video", videoName);
+                sendBroadcast(broadcast);
             }
-        });
+            else {
+                response.code(404);
+                response.send("Video Not Exists");
+            }
+        }
+    };
 
-        // listen on port 5000
-        server.listen(port);
+    private void setAndStartServer(int port) {
+        try {
+            AsyncHttpServer server = new AsyncHttpServer();
+
+            server.post("/video", mServerRequestCallback);
+
+            server.listen(port);
+        }
+        catch (Exception e) {
+            Log.e(Constants.TAG, "Ocurrió un error con el servidor: " + e.getMessage());
+        }
+    }
+
+    private void reproduceVideo(String videoName, boolean forcePlay) {
+        if (!mVideoView.isPlaying() && (forcePlay == false && mIsLandscape) || forcePlay == true) {
+            try {
+                mVideoView.setVideoFromAssets(videoName);
+                mVideoView.setLooping(false);
+            } catch (Exception e) {
+                Log.d(Constants.TAG, "Error reproduciendo vídeo: " + e.getMessage());
+            }
+        }
     }
 
     /*** Permissions ***/
@@ -415,12 +411,23 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
-        //mVideoView.onResume();
+        mVideoView.onResume();
+
+        receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String video = intent.getStringExtra("video");
+                Log.d(Constants.TAG, "Received intent with extra: " + video);
+                reproduceVideo(video, false);
+            }
+        };
+        this.getApplicationContext().registerReceiver(receiver, new IntentFilter(getApplicationContext().getPackageName() + ".messageReceived"));
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        //mVideoView.onPause();
+        mVideoView.onPause();
+        this.getApplicationContext().unregisterReceiver(receiver);
     }
 }

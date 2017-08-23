@@ -1,0 +1,21 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <EditTextPreference
+        android:defaultValue="5000"
+        android:inputType="number"
+        android:key="server_port"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/server_port_preference" />
+
+    <EditTextPreference
+        android:defaultValue="rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov"
+        android:inputType="text"
+        android:key="camera_rtsp_address"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/rtsp_camera_address_preference" />
+
+</PreferenceScreen>
